@@ -1,0 +1,1 @@
+To run the game, you need to type "cabal build" and then "cabal run."
