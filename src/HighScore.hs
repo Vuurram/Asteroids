@@ -1,5 +1,9 @@
 module HighScore where
 
+import System.IO
+import System.Directory(doesFileExist)
+import Model   
+
 initializeHighScoreFile :: FilePath -> IO ()
 initializeHighScoreFile filePath = do
     exist <- doesFileExist filePath
