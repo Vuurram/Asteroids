@@ -12,13 +12,15 @@ handleInput :: Event -> GameState -> IO GameState
 handleInput (EventKey (Char 'a') Down _ _) state =
   pure state
     { controls = (controls state)
-        { turnDirection = 1 }
+          { turnLeft = True}
+        --{ turnDirection = -1 }
     }
 
 handleInput (EventKey (Char 'd') Down _ _) state =
   pure state
     { controls = (controls state)
-        { turnDirection = -1 }
+          {turnRight = True}
+        --{ turnDirection = 1 }
     }
 
 handleInput (EventKey (Char 'w') Down _ _) state =
@@ -30,13 +32,15 @@ handleInput (EventKey (Char 'w') Down _ _) state =
 handleInput (EventKey (Char 'a') Up _ _) state =
   pure state
     { controls = (controls state)
-        { turnDirection = 0 }
+          {turnLeft = False}
+        --{ turnDirection = 0 }
     }
 
 handleInput (EventKey (Char 'd') Up _ _) state =
   pure state
     { controls = (controls state)
-        { turnDirection = 0 }
+        { turnRight = False}
+        --{ turnDirection = 0 }
     }
 
 handleInput (EventKey (Char 'w') Up _ _) state =
@@ -52,10 +56,15 @@ updateGame dt state =
   let currentControls = controls state
       ship = player state
 
-      turnedShip =
-        rotateShip
-          (turnDirection currentControls * 180 * dt)
-          ship
+      --this checks for multiple inputs for rotation. If 'a' XOR 'd' is pressed, it rotates accordingly. If both or neither, it doesn't rotate.
+      turnedShip | turnLeft currentControls && not (turnRight currentControls) = rotateShip (-1 * 180 * dt) ship
+                 | not (turnLeft currentControls) && turnRight currentControls = rotateShip (180 * dt) ship
+                 | otherwise = rotateShip 0 ship
+
+      --turnedShip =
+      --  rotateShip
+      --    (turnDirection currentControls * 180 * dt)
+      --    ship
 
       acceleratedShip =
         if thrusting currentControls

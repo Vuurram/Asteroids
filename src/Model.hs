@@ -26,8 +26,15 @@ data Asteroid = Asteroid
   }
   deriving (Eq, Show)
 
+--data Controls = Controls
+--  { turnDirection :: Float
+--  , thrusting     :: Bool
+--  }
+--  deriving (Eq, Show)
+
 data Controls = Controls
-  { turnDirection :: Float
+  { turnLeft      :: Bool
+  , turnRight     :: Bool
   , thrusting     :: Bool
   }
   deriving (Eq, Show)
@@ -65,7 +72,8 @@ initialState = GameState
   , lives = 3
   , paused = False
   , controls = Controls
-      { turnDirection = 0
+      { turnLeft = False
+      , turnRight = False
       , thrusting = False
       }
   }

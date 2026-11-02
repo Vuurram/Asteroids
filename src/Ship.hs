@@ -24,7 +24,7 @@ accelerateShip dt ship =
   let angle = shipRotation ship * pi / 180
       velocity = shipVelocity ship
       newVelocity = Position
-        { x = x velocity - sin angle * acceleration * dt
+        { x = x velocity + sin angle * acceleration * dt
         , y = y velocity + cos angle * acceleration * dt
         }
   in ship { shipVelocity = newVelocity }
