@@ -17,9 +17,12 @@ drawGame state =
 drawShip :: Ship -> Picture
 drawShip ship =
   let Position px py = shipPosition ship
-  in translate px py
-       (rotate (shipRotation ship)
-         (color white shipShape))
+  in pictures
+       [ translate px py
+           (rotate (shipRotation ship)
+             (color white shipShape))
+       , drawBoundingCircle (shipPosition ship) (shipSize ship)
+       ]
 
 -- De punt van het schip wijst standaard omhoog
 shipShape :: Picture
@@ -37,9 +40,19 @@ drawAsteroid :: Asteroid -> Picture
 drawAsteroid asteroid =
   let Position ax ay = asteroidPosition asteroid
       size = asteroidSize asteroid
-  in translate ax ay
-       (color (greyN 0.65)
-         (scale size size asteroidShape))
+  in pictures
+       [ translate ax ay
+           (color (greyN 0.65)
+             (scale size size asteroidShape))
+       , drawBoundingCircle (asteroidPosition asteroid) size
+       ]
+
+-- Maakt de bounding boxes zichtbaar voor debugging         
+drawBoundingCircle :: Position -> Float -> Picture
+drawBoundingCircle position radius =
+  let Position px py = position
+  in translate px py
+       (color red (circle radius))       
 
 -- Vorm van een asteroïde
 asteroidShape :: Picture

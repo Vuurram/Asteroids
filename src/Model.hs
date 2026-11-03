@@ -16,6 +16,7 @@ data Ship = Ship
   { shipPosition :: Position
   , shipRotation :: Rotation
   , shipVelocity :: Position
+  , shipSize     :: Float
   }
   deriving (Eq, Show)
 
@@ -54,6 +55,7 @@ initialShip = Ship
   { shipPosition = Position 0 0
   , shipRotation = 0
   , shipVelocity = Position 0 0
+  , shipSize     = 18
   }
 
 initialAsteroids :: [Asteroid]
