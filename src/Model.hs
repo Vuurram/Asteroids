@@ -27,6 +27,13 @@ data Asteroid = Asteroid
   }
   deriving (Eq, Show)
 
+data Ufo = Ufo
+  { ufoPosition :: Position
+  , ufoVelocity :: Position
+  , ufoSize     :: Float
+  }
+  deriving (Eq, Show)
+
 --data Controls = Controls
 --  { turnDirection :: Float
 --  , thrusting     :: Bool
@@ -43,6 +50,7 @@ data Controls = Controls
 data GameState = GameState
   { player    :: Ship
   , asteroids :: [Asteroid]
+  , ufo       :: [Ufo]
   , score     :: Score
   , lives     :: Lives
   , paused    :: Bool
@@ -66,10 +74,18 @@ initialAsteroids =
   , Asteroid (Position (-200) (-120)) (Position 12 14) 30
   ]
 
+initialUfo :: Ufo
+initialUfo = Ufo
+  { ufoPosition = Position 50 50
+  , ufoVelocity = Position 0 0
+  , ufoSize     = 20
+  }
+
 initialState :: GameState
 initialState = GameState
   { player = initialShip
   , asteroids = initialAsteroids
+  , ufo = [initialUfo]
   , score = 0
   , lives = 3
   , paused = False

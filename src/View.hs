@@ -6,14 +6,13 @@ module View
 import Graphics.Gloss
 import Model
 
--- Teken de volledige spelwereld
-drawGame :: GameState -> Picture
 drawGame state =
   pictures
     (map drawAsteroid (asteroids state)
-      ++ [drawShip (player state)])
+      ++ [drawShip (player state)]
+      ++ map drawUfo (ufo state)
+    )
 
--- Teken het ruimteschip als een driehoek
 drawShip :: Ship -> Picture
 drawShip ship =
   let Position px py = shipPosition ship
@@ -24,18 +23,6 @@ drawShip ship =
        , drawBoundingCircle (shipPosition ship) (shipSize ship)
        ]
 
--- De punt van het schip wijst standaard omhoog
-shipShape :: Picture
-shipShape =
-  line
-    [ (0, 18)
-    , (-12, -12)
-    , (0, -7)
-    , (12, -12)
-    , (0, 18)
-    ]
-
--- Teken een asteroïde als een onregelmatige veelhoek
 drawAsteroid :: Asteroid -> Picture
 drawAsteroid asteroid =
   let Position ax ay = asteroidPosition asteroid
@@ -47,14 +34,33 @@ drawAsteroid asteroid =
        , drawBoundingCircle (asteroidPosition asteroid) size
        ]
 
--- Maakt de bounding boxes zichtbaar voor debugging         
+drawUfo :: Ufo -> Picture
+drawUfo ufo =
+  let Position ax ay = ufoPosition ufo
+      size = ufoSize ufo
+  in pictures
+       [ translate ax ay
+           (color (greyN 0.5)
+             (scale size size ufoShape))
+       , drawBoundingCircle (ufoPosition ufo) size
+       ]
+         
 drawBoundingCircle :: Position -> Float -> Picture
 drawBoundingCircle position radius =
   let Position px py = position
   in translate px py
        (color red (circle radius))       
 
--- Vorm van een asteroïde
+shipShape :: Picture
+shipShape =
+  line
+    [ (0, 18)
+    , (-12, -12)
+    , (0, -7)
+    , (12, -12)
+    , (0, 18)
+    ]
+
 asteroidShape :: Picture
 asteroidShape =
   line
@@ -67,4 +73,20 @@ asteroidShape =
     , (-0.3, -0.9)
     , (-0.8, -0.4)
     , (-0.8, 0.2)
+    ]
+
+ufoShape :: Picture
+ufoShape =
+  line
+    [ (-1.0, 0)
+    , (-0.7, 0.3)
+    , (-0.4, 0.3)
+    , (-0.25, 0.6)
+    , (0.25, 0.6)
+    , (0.4, 0.3)
+    , (0.7, 0.3)
+    , (1.0, 0)
+    , (0.7, -0.3)
+    , (-0.7, -0.3)
+    , (-1.0, 0)
     ]

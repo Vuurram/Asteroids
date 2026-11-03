@@ -7,6 +7,7 @@ module Controller
 import Graphics.Gloss.Interface.IO.Game
 import Model
 import Ship
+import Collision
 
 handleInput :: Event -> GameState -> IO GameState
 handleInput (EventKey (Char 'a') Down _ _) state =
@@ -56,15 +57,15 @@ updateGame dt state =
   let currentControls = controls state
       ship = player state
 
-      --this checks for multiple inputs for rotation. If 'a' XOR 'd' is pressed, it rotates accordingly. If both or neither, it doesn't rotate.
-      turnedShip | turnLeft currentControls && not (turnRight currentControls) = rotateShip (-1 * 180 * dt) ship
-                 | not (turnLeft currentControls) && turnRight currentControls = rotateShip (180 * dt) ship
-                 | otherwise = rotateShip 0 ship
+      -- Check for multiple rotation inputs
+      turnedShip
+        | turnLeft currentControls && not (turnRight currentControls) =
+            rotateShip (-180 * dt) ship
 
-      --turnedShip =
-      --  rotateShip
-      --    (turnDirection currentControls * 180 * dt)
-      --    ship
+        | not (turnLeft currentControls) && turnRight currentControls =
+            rotateShip (180 * dt) ship
+
+        | otherwise = ship
 
       acceleratedShip =
         if thrusting currentControls
@@ -73,4 +74,15 @@ updateGame dt state =
 
       updatedShip = updateShip dt acceleratedShip
 
-  in pure state { player = updatedShip }
+      collisionAsteroid =
+        shipCollidesAnyAsteroid updatedShip (asteroids state)
+      
+      collisionUfo =
+        shipCollidesAnyUfo updatedShip (ufo state)
+
+  in do
+    if collisionAsteroid || collisionUfo -- For debugging purposes
+      then putStrLn "Collision!"
+      else pure ()
+
+    pure state { player = updatedShip }
