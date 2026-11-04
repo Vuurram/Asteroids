@@ -27,6 +27,22 @@ data Ship = Ship
   }
   deriving (Eq, Show)
 
+nosePosition :: Ship -> Position
+nosePosition ship =
+  let Position x y = shipPosition ship
+      angle = shipRotation ship * pi / 180
+      distance = shipSize ship
+  in Position
+       (x + distance * sin angle)
+       (y + distance * cos angle)
+
+data Bullet = Bullet
+  { bulletPosition :: Position
+  , bulletVelocity :: Position
+  , bulletTime :: Float
+  }
+  deriving (Eq, Show)
+
 data Asteroid = Asteroid
   { asteroidPosition :: Position
   , asteroidVelocity :: Position
@@ -50,6 +66,7 @@ data Controls = Controls
 
 data GameState = GameState
   { player      :: Ship
+  ,bullets :: [Bullet]
   , asteroids   :: [Asteroid]
   , ufo         :: [Ufo]
   , score       :: Score
@@ -144,6 +161,7 @@ initialStateRandom gen savedHighScore =
       (newUfos, _) = randomUfos 1 gen1
   in GameState
        { player      = initialShip
+       , bullets = []
        , asteroids   = newAsteroids
        , ufo         = newUfos
        , score       = 0

@@ -55,6 +55,14 @@ handleInput (EventKey (Char 'p') Down _ _) state =
   pure state
     { paused = not (paused state) }
 
+handleInput (EventKey (SpecialKey KeySpace) Down _ _) state
+  | paused state = pure state
+  | otherwise =
+      let newBullet = shoot (player state)
+      in pure state
+           { bullets = newBullet : bullets state
+           }
+
 handleInput _ state = pure state
 
 
@@ -99,5 +107,6 @@ updateGame dt state
           { player = updatedShip
           , asteroids = updatedAsteroids
           , ufo = updatedUfos
+          , bullets = updateBullets dt (bullets state)
           , elapsedTime = elapsedTime state + dt
           }

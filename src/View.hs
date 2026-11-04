@@ -15,6 +15,7 @@ drawGame state =
       ++ [drawHighScore (highScore state)]
       ++ [drawTime (elapsedTime state)]
       ++ [drawPause (paused state)]
+      ++ map drawBullet (bullets state)
     )
 
 drawShip :: Ship -> Picture
@@ -26,6 +27,12 @@ drawShip ship =
              (color white shipShape))
        , drawBoundingCircle (shipPosition ship) (shipSize ship)
        ]
+
+drawBullet :: Bullet -> Picture
+drawBullet bullet =
+  let Position bx by = bulletPosition bullet
+  in translate bx by
+       (color white (circleSolid 3))
 
 drawAsteroid :: Asteroid -> Picture
 drawAsteroid asteroid =
