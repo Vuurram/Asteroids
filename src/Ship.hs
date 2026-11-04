@@ -2,7 +2,6 @@ module Ship
   ( rotateShip
   , accelerateShip
   , updateShip
-  , shoot
   ) where
 
 import Model
@@ -49,15 +48,3 @@ updateShip dt ship =
         }
 
   in ship { shipPosition = wrapPosition newPosition, shipVelocity = newVelocity }
-
-bulletSpeed :: Float
-bulletSpeed = 400
-
-shoot :: Ship -> Bullet
-shoot ship =
-  let position = nosePosition ship
-      angle = shipRotation ship * pi / 180
-      velocity = Position
-        (bulletSpeed * sin angle)
-        (bulletSpeed * cos angle)
-  in Bullet position velocity 3 0.75

@@ -7,8 +7,10 @@ module Controller
 import Graphics.Gloss.Interface.IO.Game
 import Model
 import Ship
+import Bullet
 import Collision
 import Movement
+import HighScore
 
 handleInput :: Event -> GameState -> IO GameState
 handleInput (EventKey (Char 'a') Down _ _) state =
@@ -69,7 +71,7 @@ handleInput _ state = pure state
 updateGame :: Float -> GameState -> IO GameState
 updateGame dt state
   | paused state = pure state
-  | otherwise =
+  | otherwise = do
       let currentControls = controls state
           ship = player state
 
@@ -92,21 +94,31 @@ updateGame dt state
           updatedAsteroids = updateAsteroids dt (asteroids state)
           updatedUfos = updateUfos dt (ufo state)
 
+          movedBullets = updateBullets dt (bullets state)
+
+          (remainingBullets, remainingAsteroids, earnedPoints) =
+            bulletAsteroidCollisions movedBullets updatedAsteroids
+
+          newScore = score state + earnedPoints
+
           collisionAsteroid =
-            shipCollidesAnyAsteroid updatedShip updatedAsteroids
+            shipCollidesAnyAsteroid updatedShip remainingAsteroids
 
           collisionUfo =
             shipCollidesAnyUfo updatedShip updatedUfos
 
-      in do
-        if collisionAsteroid || collisionUfo
-          then putStrLn "Collision!"
-          else pure ()
+      newHighScore <- updateHighScore "highscore.txt" newScore
 
-        pure state
-          { player = updatedShip
-          , asteroids = updatedAsteroids
-          , ufo = updatedUfos
-          , bullets = updateBullets dt (bullets state)
-          , elapsedTime = elapsedTime state + dt
-          }
+      if collisionAsteroid || collisionUfo
+        then putStrLn "Collision!"
+        else pure ()
+
+      pure state
+        { player = updatedShip
+        , asteroids = remainingAsteroids
+        , ufo = updatedUfos
+        , bullets = remainingBullets
+        , score = newScore
+        , highScore = newHighScore
+        , elapsedTime = elapsedTime state + dt
+        }

@@ -55,6 +55,11 @@ asteroidRadius Large  = 45
 asteroidRadius Medium = 25
 asteroidRadius Small  = 12
 
+asteroidPoints :: AsteroidSize -> Score
+asteroidPoints Large  = 20
+asteroidPoints Medium = 50
+asteroidPoints Small  = 100
+
 data Asteroid = Asteroid
   { asteroidPosition :: Position
   , asteroidVelocity :: Position

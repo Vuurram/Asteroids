@@ -38,19 +38,21 @@ updateUfo dt enemy =
 updateUfos :: Float -> [Ufo] -> [Ufo]
 updateUfos dt = map (updateUfo dt)
 
-updateBullet :: Float -> Bullet -> Bullet
-updateBullet dt bullet =
-  let oldPosition = bulletPosition bullet
-      velocity = bulletVelocity bullet
-      newPosition = Position
-        { x = x oldPosition + x velocity * dt
-        , y = y oldPosition + y velocity * dt
-        }
-  in bullet
-       { bulletPosition = wrapPosition newPosition
-       , bulletTime = bulletTime bullet - dt
-       }
-
 updateBullets :: Float -> [Bullet] -> [Bullet]
 updateBullets dt bullets =
-  filter ((> 0) . bulletTime) (map (updateBullet dt) bullets)
+  map moveBullet (filter isAlive bullets)
+  where
+    moveBullet bullet =
+      let Position px py = bulletPosition bullet
+          Position vx vy = bulletVelocity bullet
+
+      in bullet
+           { bulletPosition = Position
+               (px + vx * dt)
+               (py + vy * dt)
+           , bulletTime = bulletTime bullet - dt
+           }
+
+    isAlive bullet =
+      bulletTime bullet > dt
+
