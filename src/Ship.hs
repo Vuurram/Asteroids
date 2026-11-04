@@ -6,6 +6,7 @@ module Ship
   ) where
 
 import Model
+import Movement
 
 --rotationSpeed :: Float
 --rotationSpeed = 180
@@ -29,12 +30,22 @@ accelerateShip dt ship =
         }
   in ship { shipVelocity = newVelocity }
 
+friction :: Float
+friction = 0.5 -- Friction coefficient
+
 updateShip :: Float -> Ship -> Ship
 updateShip dt ship =
   let position = shipPosition ship
       velocity = shipVelocity ship
+
+      newVelocity = Position
+        { x = x velocity * (1 - friction * dt)
+        , y = y velocity * (1 - friction * dt)
+        }
+
       newPosition = Position
         { x = x position + x velocity * dt
         , y = y position + y velocity * dt
         }
-  in ship { shipPosition = newPosition }
+
+  in ship { shipPosition = wrapPosition newPosition, shipVelocity = newVelocity }

@@ -1,6 +1,12 @@
 
 module Model where
 
+screenWidth :: Float
+screenWidth = 800
+
+screenHeight :: Float
+screenHeight = 600
+
 type Score = Int
 type Lives = Int
 

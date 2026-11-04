@@ -11,7 +11,7 @@ import Controller
 main :: IO ()
 main =
   playIO
-    (InWindow "Asteroids" (800, 600) (100, 100))
+    (InWindow "Asteroids" (round screenWidth, round screenHeight) (100, 100))
     black
     60
     initialState
