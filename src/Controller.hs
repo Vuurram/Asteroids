@@ -8,6 +8,7 @@ import Graphics.Gloss.Interface.IO.Game
 import Model
 import Ship
 import Collision
+import Movement
 
 handleInput :: Event -> GameState -> IO GameState
 handleInput (EventKey (Char 'a') Down _ _) state =
@@ -56,37 +57,47 @@ handleInput (EventKey (Char 'p') Down _ _) state =
 
 handleInput _ state = pure state
 
+
 updateGame :: Float -> GameState -> IO GameState
-updateGame dt state =
-  let currentControls = controls state
-      ship = player state
+updateGame dt state
+  | paused state = pure state
+  | otherwise =
+      let currentControls = controls state
+          ship = player state
 
-      -- Check for multiple rotation inputs
-      turnedShip
-        | turnLeft currentControls && not (turnRight currentControls) =
-            rotateShip (-180 * dt) ship
+          turnedShip
+            | turnLeft currentControls && not (turnRight currentControls) =
+                rotateShip (-180 * dt) ship
 
-        | not (turnLeft currentControls) && turnRight currentControls =
-            rotateShip (180 * dt) ship
+            | not (turnLeft currentControls) && turnRight currentControls =
+                rotateShip (180 * dt) ship
 
-        | otherwise = ship
+            | otherwise = ship
 
-      acceleratedShip =
-        if thrusting currentControls
-          then accelerateShip dt turnedShip
-          else turnedShip
+          acceleratedShip =
+            if thrusting currentControls
+              then accelerateShip dt turnedShip
+              else turnedShip
 
-      updatedShip = updateShip dt acceleratedShip
+          updatedShip = updateShip dt acceleratedShip
 
-      collisionAsteroid =
-        shipCollidesAnyAsteroid updatedShip (asteroids state)
-      
-      collisionUfo =
-        shipCollidesAnyUfo updatedShip (ufo state)
+          updatedAsteroids = updateAsteroids dt (asteroids state)
+          updatedUfos = updateUfos dt (ufo state)
 
-  in do
-    if collisionAsteroid || collisionUfo -- For debugging purposes
-      then putStrLn "Collision!"
-      else pure ()
+          collisionAsteroid =
+            shipCollidesAnyAsteroid updatedShip updatedAsteroids
 
-    pure state { player = updatedShip }
+          collisionUfo =
+            shipCollidesAnyUfo updatedShip updatedUfos
+
+      in do
+        if collisionAsteroid || collisionUfo
+          then putStrLn "Collision!"
+          else pure ()
+
+        pure state
+          { player = updatedShip
+          , asteroids = updatedAsteroids
+          , ufo = updatedUfos
+          , elapsedTime = elapsedTime state + dt
+          }

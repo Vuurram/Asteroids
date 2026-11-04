@@ -2,7 +2,8 @@ module HighScore where
 
 import System.IO
 import System.Directory(doesFileExist)
-import Model   
+import Model 
+
 
 initializeHighScoreFile :: FilePath -> IO ()
 initializeHighScoreFile filePath = do

@@ -7,9 +7,15 @@ import Graphics.Gloss.Interface.IO.Game
 import Model
 import View
 import Controller
+import System.Random (newStdGen)
+import HighScore (getHighScore)
 
 main :: IO ()
-main =
+main = do
+  gen <- newStdGen
+  highScore <- getHighScore "highscore.txt"
+  let initialState = initialStateRandom gen highScore
+
   playIO
     (InWindow "Asteroids" (round screenWidth, round screenHeight) (100, 100))
     black

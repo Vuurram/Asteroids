@@ -1,5 +1,6 @@
-
 module Model where
+
+import System.Random (StdGen, randomR)
 
 screenWidth :: Float
 screenWidth = 800
@@ -40,16 +41,10 @@ data Ufo = Ufo
   }
   deriving (Eq, Show)
 
---data Controls = Controls
---  { turnDirection :: Float
---  , thrusting     :: Bool
---  }
---  deriving (Eq, Show)
-
 data Controls = Controls
-  { turnLeft      :: Bool
-  , turnRight     :: Bool
-  , thrusting     :: Bool
+  { turnLeft  :: Bool
+  , turnRight :: Bool
+  , thrusting :: Bool
   }
   deriving (Eq, Show)
 
@@ -66,6 +61,18 @@ data GameState = GameState
   }
   deriving (Eq, Show)
 
+largeAsteroidSize :: Float
+largeAsteroidSize = 45
+
+mediumAsteroidSize :: Float
+mediumAsteroidSize = 25
+
+smallAsteroidSize :: Float
+smallAsteroidSize = 12
+
+minSpawnDistance :: Float
+minSpawnDistance = 150
+
 initialShip :: Ship
 initialShip = Ship
   { shipPosition = Position 0 0
@@ -74,34 +81,75 @@ initialShip = Ship
   , shipSize     = 18
   }
 
-initialAsteroids :: [Asteroid]
-initialAsteroids =
-  [ Asteroid (Position (-250) 150) (Position 15 (-10)) 35
-  , Asteroid (Position 220 100) (Position (-20) (-12)) 25
-  , Asteroid (Position 150 (-180)) (Position (-10) 18) 45
-  , Asteroid (Position (-200) (-120)) (Position 12 14) 30
-  ]
+distance :: Position -> Position -> Float
+distance p1 p2 =
+  sqrt ((x p1 - x p2) ^ 2 + (y p1 - y p2) ^ 2)
 
-initialUfo :: Ufo
-initialUfo = Ufo
-  { ufoPosition = Position 50 50
-  , ufoVelocity = Position 0 0
-  , ufoSize     = 20
-  }
+validSpawnPosition :: Position -> Bool
+validSpawnPosition pos =
+  distance pos (Position 0 0) >= minSpawnDistance
 
-initialState :: GameState
-initialState = GameState
-  { player = initialShip
-  , asteroids = initialAsteroids
-  , ufo = [initialUfo]
-  , score = 0
-  , highScore = 0
-  , lives = 3
-  , elapsedTime = 0
-  , paused = False
-  , controls = Controls
-      { turnLeft = False
-      , turnRight = False
-      , thrusting = False
-      }
-  }
+randomSpawnPosition :: StdGen -> (Position, StdGen)
+randomSpawnPosition gen =
+  let (px, gen1) = randomR (-350, 350) gen
+      (py, gen2) = randomR (-250, 250) gen1
+      pos = Position px py
+  in if validSpawnPosition pos
+       then (pos, gen2)
+       else randomSpawnPosition gen2
+
+randomAsteroid :: StdGen -> (Asteroid, StdGen)
+randomAsteroid gen =
+  let (pos, gen1) = randomSpawnPosition gen
+      (angle, gen2) = randomR (0, 2 * pi) gen1
+      (speed, gen3) = randomR (30, 70) gen2
+      (sizeIndex, gen4) = randomR (0 :: Int, 2) gen3
+
+      vx = cos angle * speed
+      vy = sin angle * speed
+
+      size = case sizeIndex of
+        0 -> largeAsteroidSize
+        1 -> mediumAsteroidSize
+        _ -> smallAsteroidSize
+
+  in (Asteroid pos (Position vx vy) size, gen4)
+
+randomAsteroids :: Int -> StdGen -> ([Asteroid], StdGen)
+randomAsteroids n gen
+  | n <= 0 = ([], gen)
+  | otherwise =
+      let (asteroid, gen1) = randomAsteroid gen
+          (rest, gen2) = randomAsteroids (n - 1) gen1
+      in (asteroid : rest, gen2)
+
+randomUfo :: StdGen -> (Ufo, StdGen)
+randomUfo gen =
+  let (pos, gen1) = randomSpawnPosition gen
+      (vx, gen2) = randomR (-20, 20) gen1
+      (vy, gen3) = randomR (-20, 20) gen2
+  in (Ufo pos (Position vx vy) 20, gen3)
+
+randomUfos :: Int -> StdGen -> ([Ufo], StdGen)
+randomUfos n gen
+  | n <= 0 = ([], gen)
+  | otherwise =
+      let (newUfo, gen1) = randomUfo gen
+          (rest, gen2) = randomUfos (n - 1) gen1
+      in (newUfo : rest, gen2)
+
+initialStateRandom :: StdGen -> Score -> GameState
+initialStateRandom gen savedHighScore =
+  let (newAsteroids, gen1) = randomAsteroids 4 gen
+      (newUfos, _) = randomUfos 1 gen1
+  in GameState
+       { player      = initialShip
+       , asteroids   = newAsteroids
+       , ufo         = newUfos
+       , score       = 0
+       , highScore   = savedHighScore
+       , lives       = 3
+       , elapsedTime = 0
+       , paused      = False
+       , controls    = Controls False False False
+       }
