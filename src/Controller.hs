@@ -50,6 +50,10 @@ handleInput (EventKey (Char 'w') Up _ _) state =
         { thrusting = False }
     }
 
+handleInput (EventKey (Char 'p') Down _ _) state =
+  pure state
+    { paused = not (paused state) }
+
 handleInput _ state = pure state
 
 updateGame :: Float -> GameState -> IO GameState

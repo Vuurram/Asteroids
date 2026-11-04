@@ -54,13 +54,15 @@ data Controls = Controls
   deriving (Eq, Show)
 
 data GameState = GameState
-  { player    :: Ship
-  , asteroids :: [Asteroid]
-  , ufo       :: [Ufo]
-  , score     :: Score
-  , lives     :: Lives
-  , paused    :: Bool
-  , controls  :: Controls
+  { player      :: Ship
+  , asteroids   :: [Asteroid]
+  , ufo         :: [Ufo]
+  , score       :: Score
+  , highScore   :: Score
+  , lives       :: Lives
+  , elapsedTime :: Float
+  , paused      :: Bool
+  , controls    :: Controls
   }
   deriving (Eq, Show)
 
@@ -93,7 +95,9 @@ initialState = GameState
   , asteroids = initialAsteroids
   , ufo = [initialUfo]
   , score = 0
+  , highScore = 0
   , lives = 3
+  , elapsedTime = 0
   , paused = False
   , controls = Controls
       { turnLeft = False

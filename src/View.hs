@@ -11,6 +11,10 @@ drawGame state =
     (map drawAsteroid (asteroids state)
       ++ [drawShip (player state)]
       ++ map drawUfo (ufo state)
+      ++ [drawScore (score state)]
+      ++ [drawHighScore (highScore state)]
+      ++ [drawTime (elapsedTime state)]
+      ++ [drawPause (paused state)]
     )
 
 drawShip :: Ship -> Picture
@@ -90,3 +94,18 @@ ufoShape =
     , (-0.7, -0.3)
     , (-1.0, 0)
     ]
+
+drawScore :: Score -> Picture
+drawScore score = translate (-390) 230 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show score)
+
+drawHighScore :: Score -> Picture
+drawHighScore highScore = translate (-390) 260 $ scale 0.15 0.15 $ color white $ text ("High Score: " ++ show highScore)
+
+drawTime :: Float -> Picture
+drawTime time =
+  let seconds = floor time :: Int
+  in translate (-390) 200 $ scale 0.15 0.15 $ color white $ text ("Time: " ++ show seconds ++ "s")
+
+drawPause :: Bool -> Picture
+drawPause True  = translate (-75) 0 $ scale 0.3 0.3 $ color red $ text "PAUSED"
+drawPause False = blank    
