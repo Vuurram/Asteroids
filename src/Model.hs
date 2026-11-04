@@ -29,24 +29,36 @@ data Ship = Ship
 
 nosePosition :: Ship -> Position
 nosePosition ship =
-  let Position x y = shipPosition ship
+  let Position px py = shipPosition ship
       angle = shipRotation ship * pi / 180
       distance = shipSize ship
   in Position
-       (x + distance * sin angle)
-       (y + distance * cos angle)
+       (px + distance * sin angle)
+       (py + distance * cos angle)
 
 data Bullet = Bullet
   { bulletPosition :: Position
   , bulletVelocity :: Position
-  , bulletTime :: Float
+  , bulletSize     :: Float
+  , bulletTime     :: Float
   }
   deriving (Eq, Show)
+
+data AsteroidSize
+  = Large
+  | Medium
+  | Small
+  deriving (Eq, Show)
+
+asteroidRadius :: AsteroidSize -> Float
+asteroidRadius Large  = 45
+asteroidRadius Medium = 25
+asteroidRadius Small  = 12
 
 data Asteroid = Asteroid
   { asteroidPosition :: Position
   , asteroidVelocity :: Position
-  , asteroidSize     :: Float
+  , asteroidSize     :: AsteroidSize
   }
   deriving (Eq, Show)
 
@@ -66,7 +78,7 @@ data Controls = Controls
 
 data GameState = GameState
   { player      :: Ship
-  ,bullets :: [Bullet]
+  , bullets     :: [Bullet]
   , asteroids   :: [Asteroid]
   , ufo         :: [Ufo]
   , score       :: Score
@@ -77,15 +89,6 @@ data GameState = GameState
   , controls    :: Controls
   }
   deriving (Eq, Show)
-
-largeAsteroidSize :: Float
-largeAsteroidSize = 45
-
-mediumAsteroidSize :: Float
-mediumAsteroidSize = 25
-
-smallAsteroidSize :: Float
-smallAsteroidSize = 12
 
 minSpawnDistance :: Float
 minSpawnDistance = 150
@@ -126,9 +129,9 @@ randomAsteroid gen =
       vy = sin angle * speed
 
       size = case sizeIndex of
-        0 -> largeAsteroidSize
-        1 -> mediumAsteroidSize
-        _ -> smallAsteroidSize
+        0 -> Large
+        1 -> Medium
+        _ -> Small
 
   in (Asteroid pos (Position vx vy) size, gen4)
 
@@ -161,7 +164,7 @@ initialStateRandom gen savedHighScore =
       (newUfos, _) = randomUfos 1 gen1
   in GameState
        { player      = initialShip
-       , bullets = []
+       , bullets     = []
        , asteroids   = newAsteroids
        , ufo         = newUfos
        , score       = 0

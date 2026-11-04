@@ -12,22 +12,28 @@ circlesCollide :: Position -> Float -> Position -> Float -> Bool
 circlesCollide p1 r1 p2 r2 =
     distanceSquared p1 p2 <= (r1 + r2) ^ 2
 
-shipCollidesAsteroid :: Ship -> Asteroid -> Bool
-shipCollidesAsteroid ship asteroid =
-  circlesCollide
-    (shipPosition ship) (shipSize ship)
-    (asteroidPosition asteroid) (asteroidSize asteroid)
-
 shipCollidesAnyAsteroid :: Ship -> [Asteroid] -> Bool
 shipCollidesAnyAsteroid ship =
-  any (shipCollidesAsteroid ship)
+    any (shipAsteroidCollision ship)
 
-shipCollidesUfo :: Ship -> Ufo -> Bool
-shipCollidesUfo ship ufo =
-  circlesCollide
-    (shipPosition ship) (shipSize ship)
-    (ufoPosition ufo) (ufoSize ufo)
+shipAsteroidCollision :: Ship -> Asteroid -> Bool
+shipAsteroidCollision ship asteroid =
+    circlesCollide
+        (shipPosition ship) (shipSize ship)
+        (asteroidPosition asteroid) (asteroidRadius (asteroidSize asteroid))
 
 shipCollidesAnyUfo :: Ship -> [Ufo] -> Bool
 shipCollidesAnyUfo ship =
-  any (shipCollidesUfo ship)
+    any (shipUfoCollision ship)
+
+shipUfoCollision :: Ship -> Ufo -> Bool
+shipUfoCollision ship ufo =
+    circlesCollide
+        (shipPosition ship) (shipSize ship)
+        (ufoPosition ufo) (ufoSize ufo)
+
+bulletAsteroidCollision :: Bullet -> Asteroid -> Bool
+bulletAsteroidCollision bullet asteroid =
+    circlesCollide
+        (bulletPosition bullet) (bulletSize bullet)
+        (asteroidPosition asteroid) (asteroidRadius (asteroidSize asteroid))

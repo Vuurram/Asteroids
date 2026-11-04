@@ -60,4 +60,4 @@ shoot ship =
       velocity = Position
         (bulletSpeed * sin angle)
         (bulletSpeed * cos angle)
-  in Bullet position velocity 0.75
+  in Bullet position velocity 3 0.75

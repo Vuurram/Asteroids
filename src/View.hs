@@ -32,17 +32,17 @@ drawBullet :: Bullet -> Picture
 drawBullet bullet =
   let Position bx by = bulletPosition bullet
   in translate bx by
-       (color white (circleSolid 3))
+       (color white (circleSolid (bulletSize bullet)))
 
 drawAsteroid :: Asteroid -> Picture
 drawAsteroid asteroid =
-  let Position ax ay = asteroidPosition asteroid
-      size = asteroidSize asteroid
+  let position@(Position px py) = asteroidPosition asteroid
+      radius = asteroidRadius (asteroidSize asteroid)
   in pictures
-       [ translate ax ay
-           (color (greyN 0.65)
-             (scale size size asteroidShape))
-       , drawBoundingCircle (asteroidPosition asteroid) size
+       [ translate px py
+           (scale radius radius
+             (color white asteroidShape))
+       , drawBoundingCircle position radius
        ]
 
 drawUfo :: Ufo -> Picture
