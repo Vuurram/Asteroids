@@ -14,7 +14,7 @@ main :: IO ()
 main = do
   gen <- newStdGen
   highScore <- getHighScore "highscore.txt"
-  let initialState = initialStateRandom gen highScore
+  let initialState = initialStateRandom gen highScore -- Initialize the game state with a random generator and the high score
 
   playIO
     (InWindow "Asteroids" (round screenWidth, round screenHeight) (100, 100))

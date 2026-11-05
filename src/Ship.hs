@@ -13,12 +13,14 @@ import Movement
 acceleration :: Float
 acceleration = 120
 
+-- Rotates the ship with angle
 rotateShip :: Float -> Ship -> Ship
 rotateShip angle ship =
   ship
     { shipRotation = shipRotation ship + angle
     }
 
+-- Accelerates the ship in the direction it is facing
 accelerateShip :: Float -> Ship -> Ship
 accelerateShip dt ship =
   let angle = shipRotation ship * pi / 180
@@ -32,6 +34,8 @@ accelerateShip dt ship =
 friction :: Float
 friction = 0.5 -- Friction coefficient
 
+-- updates the position of the ship based on its velocity 
+-- Uses a friction to makes sure it doesn't move forever
 updateShip :: Float -> Ship -> Ship
 updateShip dt ship =
   let position = shipPosition ship

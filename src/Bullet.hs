@@ -16,6 +16,7 @@ dbulletSize = 3
 dbulletTime :: Float
 dbulletTime = 0.75
 
+-- Shoots a bullet from the ship's nose position in the direction the ship is facing
 shoot :: Ship -> Bullet
 shoot ship =
   let position = nosePosition ship
@@ -27,6 +28,8 @@ shoot ship =
 
   in Bullet position velocity dbulletSize dbulletTime
 
+-- Keeps track of collisions between bullets and asteroids
+-- Returns the remaining bullets, remaining asteroids, and the score earned from destroyed asteroids
 bulletAsteroidCollisions :: [Bullet] -> [Asteroid] -> ([Bullet], [Asteroid], Score)
 bulletAsteroidCollisions bullets asteroids =
   (remainingBullets, remainingAsteroids ++ newAsteroids, earnedPoints)

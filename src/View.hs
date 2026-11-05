@@ -6,6 +6,7 @@ module View
 import Graphics.Gloss
 import Model
 
+-- Draws every component of game
 drawGame state =
   pictures
     (map drawAsteroid (asteroids state)
@@ -18,6 +19,7 @@ drawGame state =
       ++ map drawBullet (bullets state)
     )
 
+-- Logic for drawing the ship
 drawShip :: Ship -> Picture
 drawShip ship =
   let Position px py = shipPosition ship
@@ -28,12 +30,14 @@ drawShip ship =
        , drawBoundingCircle (shipPosition ship) (shipSize ship)
        ]
 
+-- Logic for drawing the bullet
 drawBullet :: Bullet -> Picture
 drawBullet bullet =
   let Position bx by = bulletPosition bullet
   in translate bx by
        (color white (circleSolid (bulletSize bullet)))
 
+-- Logic for drawing an asteroid
 drawAsteroid :: Asteroid -> Picture
 drawAsteroid asteroid =
   let position@(Position px py) = asteroidPosition asteroid
@@ -45,6 +49,7 @@ drawAsteroid asteroid =
        , drawBoundingCircle position radius
        ]
 
+-- Logic for drawing an ufo
 drawUfo :: Ufo -> Picture
 drawUfo ufo =
   let Position ax ay = ufoPosition ufo
@@ -55,12 +60,15 @@ drawUfo ufo =
              (scale size size ufoShape))
        , drawBoundingCircle (ufoPosition ufo) size
        ]
-         
+
+-- Logic for drawing the boundingcircles of entities (debugging purposes)        
 drawBoundingCircle :: Position -> Float -> Picture
 drawBoundingCircle position radius =
   let Position px py = position
   in translate px py
        (color red (circle radius))       
+
+-- Shapes for the game entities
 
 shipShape :: Picture
 shipShape =
@@ -102,17 +110,21 @@ ufoShape =
     , (-1.0, 0)
     ]
 
+-- Logic for drawing the score
 drawScore :: Score -> Picture
 drawScore score = translate (-390) 230 $ scale 0.15 0.15 $ color white $ text ("Score: " ++ show score)
 
+-- Logic for drawing the high score
 drawHighScore :: Score -> Picture
 drawHighScore highScore = translate (-390) 260 $ scale 0.15 0.15 $ color white $ text ("High Score: " ++ show highScore)
 
+-- Logic for drawing the elapsed time
 drawTime :: Float -> Picture
 drawTime time =
   let seconds = floor time :: Int
   in translate (-390) 200 $ scale 0.15 0.15 $ color white $ text ("Time: " ++ show seconds ++ "s")
 
+-- Logic for drawing the pause message
 drawPause :: Bool -> Picture
 drawPause True  = translate (-75) 0 $ scale 0.3 0.3 $ color red $ text "PAUSED"
 drawPause False = blank    

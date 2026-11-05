@@ -50,11 +50,13 @@ data AsteroidSize
   | Small
   deriving (Eq, Show)
 
+-- Maps asteroid sizes to their radius
 asteroidRadius :: AsteroidSize -> Float
 asteroidRadius Large  = 45
 asteroidRadius Medium = 25
 asteroidRadius Small  = 12
 
+-- Maps asteroid sizes to their score value
 asteroidPoints :: AsteroidSize -> Score
 asteroidPoints Large  = 20
 asteroidPoints Medium = 50
@@ -110,10 +112,12 @@ distance :: Position -> Position -> Float
 distance p1 p2 =
   sqrt ((x p1 - x p2) ^ 2 + (y p1 - y p2) ^ 2)
 
+-- Checks if a position is valid for spawning, so not too close to the ship
 validSpawnPosition :: Position -> Bool
 validSpawnPosition pos =
   distance pos (Position 0 0) >= minSpawnDistance
 
+-- Gives a random position, but not too close to the ship (this case center of screen)
 randomSpawnPosition :: StdGen -> (Position, StdGen)
 randomSpawnPosition gen =
   let (px, gen1) = randomR (-350, 350) gen
@@ -123,6 +127,7 @@ randomSpawnPosition gen =
        then (pos, gen2)
        else randomSpawnPosition gen2
 
+-- Spawn a random asteroid at a valid position, so not to close to ship
 randomAsteroid :: StdGen -> (Asteroid, StdGen)
 randomAsteroid gen =
   let (pos, gen1) = randomSpawnPosition gen
@@ -140,6 +145,7 @@ randomAsteroid gen =
 
   in (Asteroid pos (Position vx vy) size, gen4)
 
+-- Generates a specified number of random asteroids
 randomAsteroids :: Int -> StdGen -> ([Asteroid], StdGen)
 randomAsteroids n gen
   | n <= 0 = ([], gen)
@@ -148,6 +154,7 @@ randomAsteroids n gen
           (rest, gen2) = randomAsteroids (n - 1) gen1
       in (asteroid : rest, gen2)
 
+-- Generates a random UFO at a valid spawn position
 randomUfo :: StdGen -> (Ufo, StdGen)
 randomUfo gen =
   let (pos, gen1) = randomSpawnPosition gen
@@ -155,6 +162,7 @@ randomUfo gen =
       (vy, gen3) = randomR (-20, 20) gen2
   in (Ufo pos (Position vx vy) 20, gen3)
 
+-- Places a number n of ufos randomly on the screen
 randomUfos :: Int -> StdGen -> ([Ufo], StdGen)
 randomUfos n gen
   | n <= 0 = ([], gen)
@@ -163,6 +171,7 @@ randomUfos n gen
           (rest, gen2) = randomUfos (n - 1) gen1
       in (newUfo : rest, gen2)
 
+-- Initialize the game state with random asteroids and UFOs, given a random generator and a saved high score
 initialStateRandom :: StdGen -> Score -> GameState
 initialStateRandom gen savedHighScore =
   let (newAsteroids, gen1) = randomAsteroids 4 gen

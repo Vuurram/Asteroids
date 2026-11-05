@@ -4,7 +4,7 @@ import System.IO
 import System.Directory(doesFileExist)
 import Model
 
-
+-- Initialize the high score file if it doesn't exist
 initializeHighScoreFile :: FilePath -> IO ()
 initializeHighScoreFile filePath = do
     exist <- doesFileExist filePath
@@ -12,6 +12,7 @@ initializeHighScoreFile filePath = do
        then writeFile filePath "HighScore: 0"  
        else return ()
 
+-- Get the current high score from the file
 getHighScore :: FilePath -> IO Score
 getHighScore filePath = do
     initializeHighScoreFile filePath
@@ -21,6 +22,7 @@ getHighScore filePath = do
                   _         -> 0
     return score
 
+-- Update the high score in the file if the new score is higher than current highscore
 updateHighScore :: FilePath -> Score -> IO Score
 updateHighScore filePath newScore = do
     currentHighScore <- getHighScore filePath

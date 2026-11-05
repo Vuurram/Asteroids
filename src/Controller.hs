@@ -57,6 +57,7 @@ handleInput (EventKey (Char 'p') Down _ _) state =
   pure state
     { paused = not (paused state) }
 
+-- Shoot bullet when space is pressed, but only if the game is not paused
 handleInput (EventKey (SpecialKey KeySpace) Down _ _) state
   | paused state = pure state
   | otherwise =
