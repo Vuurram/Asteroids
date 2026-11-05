@@ -67,7 +67,7 @@ handleInput (EventKey (SpecialKey KeySpace) Down _ _) state
 
 handleInput _ state = pure state
 
-
+-- For now still impure because of the high score update (if we make highscore abstract) and printing to the console. 
 updateGame :: Float -> GameState -> IO GameState
 updateGame dt state
   | paused state = pure state
