@@ -32,7 +32,6 @@ handleInput (EventKey (Char 'a') Down _ _) state
     pure state
       { controls = (controls state)
             { turnLeft = True}
-          --{ turnDirection = -1 }
       }
 
 handleInput (EventKey (Char 'd') Down _ _) state 
@@ -41,7 +40,6 @@ handleInput (EventKey (Char 'd') Down _ _) state
     pure state
       { controls = (controls state)
             {turnRight = True}
-          --{ turnDirection = 1 }
       }
 
 handleInput (EventKey (Char 'w') Down _ _) state 
@@ -58,7 +56,6 @@ handleInput (EventKey (Char 'a') Up _ _) state
     pure state
      { controls = (controls state)
             {turnLeft = False}
-          --{ turnDirection = 0 }
       }
 
 handleInput (EventKey (Char 'd') Up _ _) state 
@@ -67,7 +64,6 @@ handleInput (EventKey (Char 'd') Up _ _) state
      pure state
       { controls = (controls state)
           { turnRight = False}
-           --{ turnDirection = 0 }
       }
 
 handleInput (EventKey (Char 'w') Up _ _) state 
