@@ -27,7 +27,30 @@ updateAsteroid dt asteroid =
 updateAsteroids :: Float -> [Asteroid] -> [Asteroid]
 updateAsteroids dt = map (updateAsteroid dt)
 
--- Updates the position of a ufo
+-- Makes the UFO follow the player
+followingUfo :: Ship -> Ufo -> Ufo
+followingUfo ship enemy =
+  let Position ux uy = ufoPosition enemy
+      Position sx sy = shipPosition ship
+
+      dx = sx - ux
+      dy = sy - uy
+
+      distance = sqrt (dx * dx + dy * dy)
+
+      speed = 60
+
+      newVelocity =
+        if distance > 0
+          then Position
+            (dx / distance * speed)
+            (dy / distance * speed)
+          else ufoVelocity enemy
+
+  in enemy
+       { ufoVelocity = newVelocity }
+
+-- Updates the position of a UFO
 updateUfo :: Float -> Ufo -> Ufo
 updateUfo dt enemy =
   let oldPosition = ufoPosition enemy
@@ -39,9 +62,10 @@ updateUfo dt enemy =
   in enemy
        { ufoPosition = wrapPosition newPosition }
 
--- Updates the position for all ufos
-updateUfos :: Float -> [Ufo] -> [Ufo]
-updateUfos dt = map (updateUfo dt)
+-- Updates all UFOs, making them chase the player
+updateUfos :: Float -> Ship -> [Ufo] -> [Ufo]
+updateUfos dt ship =
+  map (updateUfo dt . followingUfo ship)
 
 -- Updates the position of a bullet as long as the Lifetime is nof over
 updateBullets :: Float -> [Bullet] -> [Bullet]

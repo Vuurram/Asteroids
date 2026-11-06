@@ -10,7 +10,7 @@ import Model
 drawGame state =
   pictures
     (map drawAsteroid (asteroids state)
-      ++ [drawShip (player state) | gameStatus state == Playing] --if it's dead or dying, shouldn't draw the ship
+      ++ [drawShip (player state) | gameStatus state == Playing && shouldDrawShip state] --if it's dead or dying, shouldn't draw the ship
       ++ map drawUfo (ufo state)
       ++ [drawScore (score state)]
       ++ [drawHighScore (highScore state)]
@@ -19,6 +19,7 @@ drawGame state =
       ++ map drawBullet (bullets state)
       ++ [drawDeathAnimation state | deathTimer state > 0] --stop drawing when the death timer is 0, so the animation stops.
       ++ [drawGameOver state | gameStatus state == GameOver] --only draw if game over
+      ++ [drawLives (lives state)]  
     )
 
 -- Logic for drawing the ship
@@ -29,7 +30,6 @@ drawShip ship =
        [ translate px py
            (rotate (shipRotation ship)
              (color white shipShape))
-       , drawBoundingCircle (shipPosition ship) (shipSize ship)
        ]
 
 -- Logic for drawing the bullet
@@ -48,7 +48,6 @@ drawAsteroid asteroid =
        [ translate px py
            (scale radius radius
              (color white asteroidShape))
-       , drawBoundingCircle position radius
        ]
 
 -- Logic for drawing an ufo
@@ -60,15 +59,8 @@ drawUfo ufo =
        [ translate ax ay
            (color (greyN 0.5)
              (scale size size ufoShape))
-       , drawBoundingCircle (ufoPosition ufo) size
        ]
-
--- Logic for drawing the boundingcircles of entities (debugging purposes)        
-drawBoundingCircle :: Position -> Float -> Picture
-drawBoundingCircle position radius =
-  let Position px py = position
-  in translate px py
-       (color red (circle radius))       
+     
 
 -- Shapes for the game entities
 
@@ -131,6 +123,7 @@ drawPause :: Bool -> Picture
 drawPause True  = translate (-75) 0 $ scale 0.3 0.3 $ color red $ text "PAUSED"
 drawPause False = blank    
 
+-- Logic for drawing the game over message
 drawGameOver :: GameState -> Picture
 drawGameOver _ =
   pictures
@@ -143,6 +136,16 @@ drawGameOver _ =
         scale 0.2 0.2 $
           color white $
             text "Press R to restart"
+    ]
+
+-- Draws the remaining lives
+drawLives :: Lives -> Picture
+drawLives remainingLives =
+  pictures
+    [ translate (300 + fromIntegral i * 30) 250 $
+        scale 0.7 0.7 $
+          color white shipShape
+    | i <- [0 .. remainingLives - 1]
     ]
 
 drawDeathAnimation :: GameState -> Picture
@@ -158,3 +161,12 @@ drawDeathAnimation state =
          [ color orange (circle outerRadius)
          , color yellow (circle innerRadius)
          ]
+
+--this is to create a blinking effect for the ship when it is invincible after respawning. The ship will blink on and off at a certain speed, which is determined by the invincibility timer. 
+shouldDrawShip :: GameState -> Bool
+shouldDrawShip state
+  | invincibilityTimer state <= 0 = True
+  | otherwise =
+      let blinkSpeed = 8 -- Adjust this value to change the blink speed. The higher the value, the faster the blinking.
+          blinkPhase = floor (invincibilityTimer state * blinkSpeed) :: Int --this works by multiplying by the invincibility timer, which will at consistent intervals switch between an even and uneven number. We can then draw, or not draw, the ship based on the number we get, at a consistent rate
+      in even blinkPhase

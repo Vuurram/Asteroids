@@ -100,7 +100,7 @@ handleInput _ state = pure state
 updateDying :: Float -> GameState -> IO GameState
 updateDying dt state = do
   let updatedAsteroids = updateAsteroids dt (asteroids state)
-      updatedUfos = updateUfos dt (ufo state)
+      updatedUfos = updateUfos dt (player state) (ufo state)
       updatedBullets = updateBullets dt (bullets state)
 
       remainingTime = deathTimer state - dt
@@ -127,7 +127,7 @@ updateDying dt state = do
         , elapsedTime = elapsedTime state + dt
         }
 
-updatePlaying :: Float -> GameState -> IO GameState
+updatePlaying :: Float -> GameState -> IO GameState 
 updatePlaying dt state = do
   let currentControls = controls state
       ship = player state
@@ -149,7 +149,7 @@ updatePlaying dt state = do
       updatedShip = updateShip dt acceleratedShip
 
       updatedAsteroids = updateAsteroids dt (asteroids state)
-      updatedUfos = updateUfos dt (ufo state)
+      updatedUfos = updateUfos dt updatedShip (ufo state)
 
       movedBullets = updateBullets dt (bullets state)
 
@@ -190,18 +190,18 @@ updatePlaying dt state = do
   newHighScore <- updateHighScore "highscore.txt" newScore
 
   -- Start a new wave if all asteroids and UFOs are destroyed.
-  (newAsteroids, newUfos) <-
+  (newAsteroids, newUfos, newPlayer) <-
     if null remainingAsteroids && null remainingUfos
       then do
         gen <- newStdGen
         let (spawnedAsteroids, gen1) = randomAsteroids 4 gen
             (spawnedUfos, _) = randomUfos 1 gen1
-        pure (spawnedAsteroids, spawnedUfos)
+        pure (spawnedAsteroids, spawnedUfos, initialShip)
       else
-        pure (remainingAsteroids, remainingUfos)
+        pure (remainingAsteroids, remainingUfos, updatedShip)
 
   pure state
-    { player = updatedShip
+    { player = newPlayer
     , asteroids = newAsteroids
     , ufo = newUfos
     , bullets = finalBullets
@@ -221,7 +221,7 @@ updateGameOver :: Float -> GameState -> IO GameState
 updateGameOver dt state =
   pure state
     { asteroids = updateAsteroids dt (asteroids state)
-    , ufo = updateUfos dt (ufo state)
+    , ufo = updateUfos dt (player state) (ufo state)
     , bullets = updateBullets dt (bullets state)
     , deathTimer = max 0 (deathTimer state - dt)
     , elapsedTime = elapsedTime state + dt
