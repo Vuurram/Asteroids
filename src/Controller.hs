@@ -206,7 +206,7 @@ updateGameOver dt state =
     , elapsedTime = elapsedTime state + dt
     }
 
--- For now still impure because of the high score update (if we make highscore abstract) and printing to the console.
+-- Impure wrapper for updating the game. Keeping the rest pure.
 updateGame :: Float -> GameState -> IO GameState
 updateGame dt state
   | paused state = pure state
