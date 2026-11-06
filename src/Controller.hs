@@ -96,6 +96,7 @@ handleInput (EventKey (SpecialKey KeySpace) Down _ _) state
 
 handleInput _ state = pure state
 
+<<<<<<< HEAD
 --when the player dies, takes some time to respawn.
 updateDying :: Float -> GameState -> IO GameState
 updateDying dt state = do
@@ -236,3 +237,60 @@ updateGame dt state
   | gameStatus state == Dying = updateDying dt state
   | otherwise = updatePlaying dt state
  
+=======
+-- For now still impure because of the high score update (if we make highscore abstract) and printing to the console. 
+updateGame :: Float -> GameState -> IO GameState
+updateGame dt state
+  | paused state = pure state
+  | otherwise = do
+      let currentControls = controls state
+          ship = player state
+
+          turnedShip
+            | turnLeft currentControls && not (turnRight currentControls) =
+                rotateShip (-180 * dt) ship
+
+            | not (turnLeft currentControls) && turnRight currentControls =
+                rotateShip (180 * dt) ship
+
+            | otherwise = ship
+
+          acceleratedShip =
+            if thrusting currentControls
+              then accelerateShip dt turnedShip
+              else turnedShip
+
+          updatedShip = updateShip dt acceleratedShip
+
+          updatedAsteroids = updateAsteroids dt (asteroids state)
+          updatedUfos = updateUfos dt (ufo state)
+
+          movedBullets = updateBullets dt (bullets state)
+
+          (remainingBullets, remainingAsteroids, earnedPoints) =
+            bulletAsteroidCollisions movedBullets updatedAsteroids
+
+          newScore = score state + earnedPoints
+
+          collisionAsteroid =
+            shipCollidesAnyAsteroid updatedShip remainingAsteroids
+
+          collisionUfo =
+            shipCollidesAnyUfo updatedShip updatedUfos
+
+      newHighScore <- updateHighScore "highscore.txt" newScore
+
+      if collisionAsteroid || collisionUfo
+        then putStrLn "Collision!"
+        else pure ()
+
+      pure state
+        { player = updatedShip
+        , asteroids = remainingAsteroids
+        , ufo = updatedUfos
+        , bullets = remainingBullets
+        , score = newScore
+        , highScore = newHighScore
+        , elapsedTime = elapsedTime state + dt
+        }
+>>>>>>> origin/main
