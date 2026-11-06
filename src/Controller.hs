@@ -20,7 +20,7 @@ invincibilityDuration :: Float
 invincibilityDuration = 3.0 -- Duration of invincibility after respawn in seconds
 
 handleInput :: Event -> GameState -> IO GameState
---handle restarting the game when 'r' is pressed
+-- Handle restarting the game when 'r' is pressed
 handleInput (EventKey (Char 'r') Down _ _) state 
   | gameStatus state == GameOver = do
       gen <- newStdGen
@@ -98,7 +98,6 @@ updateDying dt state = do
   let updatedAsteroids = updateAsteroids dt (asteroids state)
       updatedUfos = updateUfos dt (player state) (ufo state)
       updatedBullets = updateBullets dt (bullets state)
-
       remainingTime = deathTimer state - dt
 
   if remainingTime <= 0
@@ -114,7 +113,7 @@ updateDying dt state = do
         , controls = Controls False False False
         , elapsedTime = elapsedTime state + dt
         }
-    else --the world should still update while the player is dead, so we update the asteroids, UFOs, and bullets, but not the player.
+    else
       pure state
         { asteroids = updatedAsteroids
         , ufo = updatedUfos
@@ -123,7 +122,8 @@ updateDying dt state = do
         , elapsedTime = elapsedTime state + dt
         }
 
-updatePlaying :: Float -> GameState -> IO GameState 
+-- Updates the game state based on the current game status
+updatePlaying :: Float -> GameState -> IO GameState
 updatePlaying dt state = do
   let currentControls = controls state
       ship = player state
@@ -131,10 +131,8 @@ updatePlaying dt state = do
       turnedShip
         | turnLeft currentControls && not (turnRight currentControls) =
             rotateShip (-180 * dt) ship
-
         | not (turnLeft currentControls) && turnRight currentControls =
             rotateShip (180 * dt) ship
-
         | otherwise = ship
 
       acceleratedShip =
@@ -146,7 +144,6 @@ updatePlaying dt state = do
 
       updatedAsteroids = updateAsteroids dt (asteroids state)
       updatedUfos = updateUfos dt updatedShip (ufo state)
-
       movedBullets = updateBullets dt (bullets state)
 
       (remainingBullets, remainingAsteroids, earnedPoints) =
@@ -156,8 +153,8 @@ updatePlaying dt state = do
         bulletUfoCollisions remainingBullets updatedUfos
 
       newScore = score state + earnedPoints + ufoPoints
+      newHighScore = max (highScore state) newScore
 
-      -- Check whether the player is allowed to collide with enemies.
       canCollide = invincibilityTimer state <= 0
 
       collisionAsteroid =
@@ -170,11 +167,9 @@ updatePlaying dt state = do
 
       playerCollided = collisionAsteroid || collisionUfo
 
-      -- Remove one life if the player collided with something.
       newLives =
         if playerCollided then lives state - 1 else lives state
 
-      -- Determine what happens after the collision.
       newStatus
         | playerCollided && newLives <= 0 = GameOver
         | playerCollided = Dying
@@ -183,9 +178,6 @@ updatePlaying dt state = do
       newInvincibilityTimer =
         max 0 (invincibilityTimer state - dt)
 
-  newHighScore <- updateHighScore "highscore.txt" newScore
-
-  -- Start a new wave if all asteroids and UFOs are destroyed.
   (newAsteroids, newUfos, newPlayer) <-
     if null remainingAsteroids && null remainingUfos
       then do
@@ -195,6 +187,12 @@ updatePlaying dt state = do
         pure (spawnedAsteroids, spawnedUfos, initialShip)
       else
         pure (remainingAsteroids, remainingUfos, updatedShip)
+
+  if newStatus == GameOver
+    then do
+      _ <- updateHighScore "highscore.txt" newScore
+      pure ()
+    else pure ()
 
   pure state
     { player = newPlayer
@@ -206,7 +204,7 @@ updatePlaying dt state = do
     , lives = newLives
     , gameStatus = newStatus
     , deathTimer =
-        if playerCollided then deathDuration else 0 --we want animations to still happen when it's game over.
+        if playerCollided then deathDuration else 0
     , invincibilityTimer =
         if playerCollided then 0 else newInvincibilityTimer
     , elapsedTime = elapsedTime state + dt
@@ -228,7 +226,7 @@ updateGameOver dt state =
 updateGame :: Float -> GameState -> IO GameState
 updateGame dt state
   | gameStatus state == GameOver = updateGameOver dt state
-  | paused state = pure state
+  | paused state     = pure state
   | gameStatus state == Dying = updateDying dt state
-  | otherwise = updatePlaying dt state
+  | otherwise        = updatePlaying dt state
  

@@ -10,15 +10,15 @@ import Model
 drawGame state =
   pictures
     (map drawAsteroid (asteroids state)
-      ++ [drawShip (player state) | gameStatus state == Playing && shouldDrawShip state] --if it's dead or dying, shouldn't draw the ship
+      ++ [drawShip (player state) | gameStatus state == Playing && shouldDrawShip state] -- If it's dead or dying, shouldn't draw the ship
       ++ map drawUfo (ufo state)
       ++ [drawScore (score state)]
       ++ [drawHighScore (highScore state)]
       ++ [drawTime (elapsedTime state)]
       ++ [drawPause (paused state)]
       ++ map drawBullet (bullets state)
-      ++ [drawDeathAnimation state | deathTimer state > 0] --stop drawing when the death timer is 0, so the animation stops.
-      ++ [drawGameOver state | gameStatus state == GameOver] --only draw if game over
+      ++ [drawDeathAnimation state | deathTimer state > 0] -- Stop drawing when the death timer is 0, so the animation stops.
+      ++ [drawGameOver state | gameStatus state == GameOver] -- Only draw if game over
       ++ [drawLives (lives state)]  
     )
 
@@ -152,7 +152,7 @@ drawDeathAnimation :: GameState -> Picture
 drawDeathAnimation state =
   let Position px py = shipPosition (player state)
 
-      progress = 1 - deathTimer state -- how much bigger the circle should become over time
+      progress    = 1 - deathTimer state -- How much bigger the circle should become over time
       outerRadius = 8 + progress * 45
       innerRadius = 4 + progress * 25
 
@@ -162,11 +162,11 @@ drawDeathAnimation state =
          , color yellow (circle innerRadius)
          ]
 
---this is to create a blinking effect for the ship when it is invincible after respawning. The ship will blink on and off at a certain speed, which is determined by the invincibility timer. 
+-- This is to create a blinking effect for the ship when it is invincible after respawning. The ship will blink on and off at a certain speed, which is determined by the invincibility timer. 
 shouldDrawShip :: GameState -> Bool
 shouldDrawShip state
   | invincibilityTimer state <= 0 = True
   | otherwise =
       let blinkSpeed = 8 -- Adjust this value to change the blink speed. The higher the value, the faster the blinking.
-          blinkPhase = floor (invincibilityTimer state * blinkSpeed) :: Int --this works by multiplying by the invincibility timer, which will at consistent intervals switch between an even and uneven number. We can then draw, or not draw, the ship based on the number we get, at a consistent rate
+          blinkPhase = floor (invincibilityTimer state * blinkSpeed) :: Int -- This works by multiplying by the invincibility timer, which will at consistent intervals switch between an even and uneven number. We can then draw, or not draw, the ship based on the number we get, at a consistent rate
       in even blinkPhase

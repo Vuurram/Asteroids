@@ -15,7 +15,7 @@ wrapPosition (Position px py) =
 updateAsteroid :: Float -> Asteroid -> Asteroid
 updateAsteroid dt asteroid =
   let oldPosition = asteroidPosition asteroid
-      velocity = asteroidVelocity asteroid
+      velocity    = asteroidVelocity asteroid
       newPosition = Position
         { x = x oldPosition + x velocity * dt
         , y = y oldPosition + y velocity * dt
@@ -53,9 +53,9 @@ followingUfo ship enemy =
 -- Updates the position of a UFO
 updateUfo :: Float -> Ufo -> Ufo
 updateUfo dt enemy =
-  let oldPosition = ufoPosition enemy
-      velocity = ufoVelocity enemy
-      newPosition = Position
+  let oldPosition  = ufoPosition enemy
+      velocity     = ufoVelocity enemy
+      newPosition  = Position
         { x = x oldPosition + x velocity * dt
         , y = y oldPosition + y velocity * dt
         }

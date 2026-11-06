@@ -23,8 +23,8 @@ rotateShip angle ship =
 -- Accelerates the ship in the direction it is facing
 accelerateShip :: Float -> Ship -> Ship
 accelerateShip dt ship =
-  let angle = shipRotation ship * pi / 180
-      velocity = shipVelocity ship
+  let angle       = shipRotation ship * pi / 180
+      velocity    = shipVelocity ship
       newVelocity = Position
         { x = x velocity + sin angle * acceleration * dt
         , y = y velocity + cos angle * acceleration * dt

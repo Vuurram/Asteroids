@@ -39,7 +39,7 @@ bulletAsteroidCollision bullet asteroid =
         (bulletPosition bullet) (bulletSize bullet)
         (asteroidPosition asteroid) (asteroidRadius (asteroidSize asteroid))
 
---for bullet with ufo collision
+-- For bullet with ufo collision
 bulletUfoCollision :: Bullet -> Ufo -> Bool
 bulletUfoCollision bullet ufo =
     circlesCollide

@@ -30,8 +30,8 @@ data Ship = Ship
 nosePosition :: Ship -> Position
 nosePosition ship =
   let Position px py = shipPosition ship
-      angle = shipRotation ship * pi / 180
-      distance = shipSize ship
+      angle          = shipRotation ship * pi / 180
+      distance       = shipSize ship
   in Position
        (px + distance * sin angle)
        (py + distance * cos angle)
@@ -90,19 +90,19 @@ data GameStatus
   deriving (Eq, Show)
 
 data GameState = GameState
-  { player      :: Ship
-  , bullets     :: [Bullet]
-  , asteroids   :: [Asteroid]
-  , ufo         :: [Ufo]
-  , score       :: Score
-  , highScore   :: Score
-  , lives       :: Lives
-  , elapsedTime :: Float
-  , paused      :: Bool
-  , gameStatus  :: GameStatus
-  , deathTimer  :: Float
+  { player             :: Ship
+  , bullets            :: [Bullet]
+  , asteroids          :: [Asteroid]
+  , ufo                :: [Ufo]
+  , score              :: Score
+  , highScore          :: Score
+  , lives              :: Lives
+  , elapsedTime        :: Float
+  , paused             :: Bool
+  , gameStatus         :: GameStatus
+  , deathTimer         :: Float
   , invincibilityTimer :: Float
-  , controls    :: Controls
+  , controls           :: Controls
   }
   deriving (Eq, Show)
 
@@ -131,7 +131,7 @@ randomSpawnPosition :: StdGen -> (Position, StdGen)
 randomSpawnPosition gen =
   let (px, gen1) = randomR (-350, 350) gen
       (py, gen2) = randomR (-250, 250) gen1
-      pos = Position px py
+      pos        = Position px py
   in if validSpawnPosition pos
        then (pos, gen2)
        else randomSpawnPosition gen2
@@ -139,9 +139,9 @@ randomSpawnPosition gen =
 -- Spawn a random asteroid at a valid position, so not to close to ship
 randomAsteroid :: StdGen -> (Asteroid, StdGen)
 randomAsteroid gen =
-  let (pos, gen1) = randomSpawnPosition gen
-      (angle, gen2) = randomR (0, 2 * pi) gen1
-      (speed, gen3) = randomR (30, 70) gen2
+  let (pos, gen1)       = randomSpawnPosition gen
+      (angle, gen2)     = randomR (0, 2 * pi) gen1
+      (speed, gen3)     = randomR (30, 70) gen2
       (sizeIndex, gen4) = randomR (0 :: Int, 2) gen3
 
       vx = cos angle * speed
@@ -160,15 +160,15 @@ randomAsteroids n gen
   | n <= 0 = ([], gen)
   | otherwise =
       let (asteroid, gen1) = randomAsteroid gen
-          (rest, gen2) = randomAsteroids (n - 1) gen1
+          (rest, gen2)     = randomAsteroids (n - 1) gen1
       in (asteroid : rest, gen2)
 
 -- Generates a random UFO at a valid spawn position
 randomUfo :: StdGen -> (Ufo, StdGen)
 randomUfo gen =
   let (pos, gen1) = randomSpawnPosition gen
-      (vx, gen2) = randomR (-20, 20) gen1
-      (vy, gen3) = randomR (-20, 20) gen2
+      (vx, gen2)  = randomR (-20, 20) gen1
+      (vy, gen3)  = randomR (-20, 20) gen2
   in (Ufo pos (Position vx vy) 20, gen3)
 
 -- Places a number n of ufos randomly on the screen
@@ -177,14 +177,14 @@ randomUfos n gen
   | n <= 0 = ([], gen)
   | otherwise =
       let (newUfo, gen1) = randomUfo gen
-          (rest, gen2) = randomUfos (n - 1) gen1
+          (rest, gen2)   = randomUfos (n - 1) gen1
       in (newUfo : rest, gen2)
 
 -- Initialize the game state with random asteroids and UFOs, given a random generator and a saved high score
 initialStateRandom :: StdGen -> Score -> GameState
 initialStateRandom gen savedHighScore =
   let (newAsteroids, gen1) = randomAsteroids 4 gen
-      (newUfos, _) = randomUfos 1 gen1
+      (newUfos, _)         = randomUfos 1 gen1
   in GameState
        { player      = initialShip
        , bullets     = []
