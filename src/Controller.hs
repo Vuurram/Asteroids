@@ -92,39 +92,40 @@ handleInput (EventKey (SpecialKey KeySpace) Down _ _) state
 
 handleInput _ state = pure state
 
+-- When the player dies, takes some time to respawn.
 --when the player dies, takes some time to respawn.
-updateDying :: Float -> GameState -> IO GameState
-updateDying dt state = do
+updateDying :: Float -> GameState -> GameState
+updateDying dt state =
   let updatedAsteroids = updateAsteroids dt (asteroids state)
       updatedUfos = updateUfos dt (player state) (ufo state)
       updatedBullets = updateBullets dt (bullets state)
       remainingTime = deathTimer state - dt
 
-  if remainingTime <= 0
-    then
-      pure state
-        { player = initialShip
-        , asteroids = updatedAsteroids
-        , ufo = updatedUfos
-        , bullets = updatedBullets
-        , gameStatus = Playing
-        , deathTimer = 0
-        , invincibilityTimer = invincibilityDuration
-        , controls = Controls False False False
-        , elapsedTime = elapsedTime state + dt
-        }
-    else
-      pure state
-        { asteroids = updatedAsteroids
-        , ufo = updatedUfos
-        , bullets = updatedBullets
-        , deathTimer = remainingTime
-        , elapsedTime = elapsedTime state + dt
-        }
+  in if remainingTime <= 0
+       then
+         state
+           { player = initialShip
+           , asteroids = updatedAsteroids
+           , ufo = updatedUfos
+           , bullets = updatedBullets
+           , gameStatus = Playing
+           , deathTimer = 0
+           , invincibilityTimer = invincibilityDuration
+           , controls = Controls False False False
+           , elapsedTime = elapsedTime state + dt
+           }
+       else
+         state
+           { asteroids = updatedAsteroids
+           , ufo = updatedUfos
+           , bullets = updatedBullets
+           , deathTimer = remainingTime
+           , elapsedTime = elapsedTime state + dt
+           }
 
 -- Updates the game state based on the current game status
-updatePlaying :: Float -> GameState -> IO GameState
-updatePlaying dt state = do
+updatePlaying :: Float -> GameState -> GameState
+updatePlaying dt state =
   let currentControls = controls state
       ship = player state
 
@@ -178,42 +179,26 @@ updatePlaying dt state = do
       newInvincibilityTimer =
         max 0 (invincibilityTimer state - dt)
 
-  (newAsteroids, newUfos, newPlayer) <-
-    if null remainingAsteroids && null remainingUfos
-      then do
-        gen <- newStdGen
-        let (spawnedAsteroids, gen1) = randomAsteroids 4 gen
-            (spawnedUfos, _) = randomUfos 1 gen1
-        pure (spawnedAsteroids, spawnedUfos, initialShip)
-      else
-        pure (remainingAsteroids, remainingUfos, updatedShip)
-
-  if newStatus == GameOver
-    then do
-      _ <- updateHighScore "highscore.txt" newScore
-      pure ()
-    else pure ()
-
-  pure state
-    { player = newPlayer
-    , asteroids = newAsteroids
-    , ufo = newUfos
-    , bullets = finalBullets
-    , score = newScore
-    , highScore = newHighScore
-    , lives = newLives
-    , gameStatus = newStatus
-    , deathTimer =
-        if playerCollided then deathDuration else 0
-    , invincibilityTimer =
-        if playerCollided then 0 else newInvincibilityTimer
-    , elapsedTime = elapsedTime state + dt
-    }
+  in state
+       { player = updatedShip
+       , asteroids = remainingAsteroids
+       , ufo = remainingUfos
+       , bullets = finalBullets
+       , score = newScore
+       , highScore = newHighScore
+       , lives = newLives
+       , gameStatus = newStatus
+       , deathTimer =
+           if playerCollided then deathDuration else 0
+       , invincibilityTimer =
+           if playerCollided then 0 else newInvincibilityTimer
+       , elapsedTime = elapsedTime state + dt
+       }
 
 -- Keep the world moving after Game Over, instead of freezing everything.
-updateGameOver :: Float -> GameState -> IO GameState
+updateGameOver :: Float -> GameState -> GameState
 updateGameOver dt state =
-  pure state
+  state
     { asteroids = updateAsteroids dt (asteroids state)
     , ufo = updateUfos dt (player state) (ufo state)
     , bullets = updateBullets dt (bullets state)
@@ -221,12 +206,32 @@ updateGameOver dt state =
     , elapsedTime = elapsedTime state + dt
     }
 
-
--- For now still impure because of the high score update (if we make highscore abstract) and printing to the console. 
+-- For now still impure because of the high score update (if we make highscore abstract) and printing to the console.
 updateGame :: Float -> GameState -> IO GameState
 updateGame dt state
-  | gameStatus state == GameOver = updateGameOver dt state
-  | paused state     = pure state
-  | gameStatus state == Dying = updateDying dt state
-  | otherwise        = updatePlaying dt state
+  | paused state = pure state
+  | gameStatus state == GameOver =
+      pure (updateGameOver dt state)
+  | gameStatus state == Dying =
+      pure (updateDying dt state)
+  | otherwise = do
+      let updatedState = updatePlaying dt state
+
+      if gameStatus updatedState == GameOver
+        then do
+          savedHighScore <- updateHighScore "highscore.txt" (score updatedState)
+          pure updatedState
+            { highScore = savedHighScore }
+        else if null (asteroids updatedState) && null (ufo updatedState)
+          then do
+            gen <- newStdGen
+            let (spawnedAsteroids, gen1) = randomAsteroids 4 gen
+                (spawnedUfos, _) = randomUfos 1 gen1
+            pure updatedState
+              { asteroids = spawnedAsteroids
+              , ufo = spawnedUfos
+              , player = initialShip
+              }
+          else
+            pure updatedState
  
